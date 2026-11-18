@@ -1,59 +1,59 @@
 
 <?php
 // ============================================================
-// FILE: clients/view_client.php
-// DESCRIPTION: View Client Details + Google Maps
+// FILE: customers/view_customer.php
+// DESCRIPTION: View Customer Details + Google Maps
 // ============================================================
 
 require_once '../config/config.php';
-require_permission('clients');
+require_permission('customers');
 
-$page_title = 'View Client';
+$page_title = 'View Customer';
 
 // ------------------------------------------------------------
-// 1. GET CLIENT ID
+// 1. GET CUSTOMER ID
 // ------------------------------------------------------------
 
 $id = (int)($_GET['id'] ?? 0);
 
 if ($id <= 0) {
-    redirect('clients_list.php');
+    redirect('customers_list.php');
 }
 
 // ------------------------------------------------------------
-// 2. FETCH CLIENT DETAILS
+// 2. FETCH CUSTOMER DETAILS
 // ------------------------------------------------------------
 
 $stmt = $conn->prepare("
     SELECT *
-    FROM clients
+    FROM customers
     WHERE id = ?
     AND is_active = 1
     LIMIT 1
 ");
 
 if (!$stmt) {
-    set_flash('error', 'Unable to fetch client details.');
-    redirect('clients_list.php');
+    set_flash('error', 'Unable to fetch customer details.');
+    redirect('customers_list.php');
 }
 
 $stmt->bind_param('i', $id);
 $stmt->execute();
 
-$client = $stmt->get_result()->fetch_assoc();
+$customer = $stmt->get_result()->fetch_assoc();
 
 $stmt->close();
 
-if (!$client) {
-    set_flash('error', 'Client not found.');
-    redirect('clients_list.php');
+if (!$customer) {
+    set_flash('error', 'Customer not found.');
+    redirect('customers_list.php');
 }
 
 // ------------------------------------------------------------
 // 3. PREPARE ADDRESS
 // ------------------------------------------------------------
 
-$address = trim($client['address'] ?? '');
+$address = trim($customer['address'] ?? '');
 
 $mapQuery = $address !== '' ? $address : 'Nagpur Maharashtra';
 
@@ -81,7 +81,7 @@ include '../includes/header.php';
     <div>
 
         <h1 class="text-2xl font-bold text-white">
-            Client Details
+            Customer Details
         </h1>
 
         <p class="text-xs text-slate-400 mt-1">
@@ -93,15 +93,15 @@ include '../includes/header.php';
     <div class="flex items-center gap-2">
 
         <a
-            href="edit_client.php?id=<?= $id ?>"
+            href="edit_customer.php?id=<?= $id ?>"
             class="px-4 py-2 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-500/25 transition"
         >
             <i class="fas fa-edit mr-1"></i>
-            Edit Client
+            Edit Customer
         </a>
 
         <a
-            href="clients_list.php"
+            href="customers_list.php"
             class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-xs hover:bg-white/10 transition"
         >
             <i class="fas fa-arrow-left mr-1"></i>
@@ -114,7 +114,7 @@ include '../includes/header.php';
 
 
 <!-- =========================================================
-     CLIENT PROFILE CARD
+     CUSTOMER PROFILE CARD
 ========================================================= -->
 
 <div class="glass-dark rounded-2xl p-5 mb-5">
@@ -123,18 +123,18 @@ include '../includes/header.php';
 
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-500/20">
 
-            <?= strtoupper(substr($client['client_name'], 0, 1)) ?>
+            <?= strtoupper(substr($customer['customer_name'], 0, 1)) ?>
 
         </div>
 
         <div class="flex-1 min-w-0">
 
             <h2 class="text-xl font-bold text-white">
-                <?= e($client['client_name']) ?>
+                <?= e($customer['customer_name']) ?>
             </h2>
 
             <p class="text-xs text-slate-400 mt-1">
-                Client ID: #<?= $id ?>
+                Customer ID: #<?= $id ?>
             </p>
 
         </div>
@@ -142,7 +142,7 @@ include '../includes/header.php';
         <span class="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
 
             <i class="fas fa-check-circle mr-1"></i>
-            Active Client
+            Active Customer
 
         </span>
 
@@ -157,7 +157,7 @@ include '../includes/header.php';
 
 <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
-    <!-- CLIENT INFORMATION -->
+    <!-- CUSTOMER INFORMATION -->
 
     <div class="lg:col-span-2 glass-dark rounded-2xl p-5">
 
@@ -176,7 +176,7 @@ include '../includes/header.php';
                 </h3>
 
                 <p class="text-[10px] text-slate-500">
-                    Registered client details
+                    Registered customer details
                 </p>
 
             </div>
@@ -191,11 +191,11 @@ include '../includes/header.php';
             <div class="pb-3 border-b border-white/5">
 
                 <p class="text-[11px] text-slate-500 mb-1">
-                    Client Name
+                    Customer Name
                 </p>
 
                 <p class="text-sm text-slate-200 font-medium">
-                    <?= e($client['client_name']) ?>
+                    <?= e($customer['customer_name']) ?>
                 </p>
 
             </div>
@@ -209,16 +209,16 @@ include '../includes/header.php';
                     Phone Number
                 </p>
 
-                <?php if (!empty($client['phone'])): ?>
+                <?php if (!empty($customer['phone'])): ?>
 
                     <a
-                        href="tel:<?= e($client['phone']) ?>"
+                        href="tel:<?= e($customer['phone']) ?>"
                         class="text-sm text-slate-200 hover:text-indigo-400 transition"
                     >
 
                         <i class="fas fa-phone text-emerald-400 mr-2"></i>
 
-                        <?= e($client['phone']) ?>
+                        <?= e($customer['phone']) ?>
 
                     </a>
 
@@ -239,16 +239,16 @@ include '../includes/header.php';
                     Email Address
                 </p>
 
-                <?php if (!empty($client['email'])): ?>
+                <?php if (!empty($customer['email'])): ?>
 
                     <a
-                        href="mailto:<?= e($client['email']) ?>"
+                        href="mailto:<?= e($customer['email']) ?>"
                         class="text-sm text-slate-200 hover:text-indigo-400 transition break-all"
                     >
 
                         <i class="fas fa-envelope text-indigo-400 mr-2"></i>
 
-                        <?= e($client['email']) ?>
+                        <?= e($customer['email']) ?>
 
                     </a>
 
@@ -270,8 +270,8 @@ include '../includes/header.php';
                 </p>
 
                 <p class="text-sm text-slate-200">
-                    <?= !empty($client['gst_no'])
-                        ? e($client['gst_no'])
+                    <?= !empty($customer['gst_no'])
+                        ? e($customer['gst_no'])
                         : '<span class="text-slate-500">Not provided</span>'
                     ?>
                 </p>
@@ -324,7 +324,7 @@ include '../includes/header.php';
                 <div>
 
                     <h3 class="text-sm font-bold text-white">
-                        Client Location
+                        Customer Location
                     </h3>
 
                     <p class="text-[10px] text-slate-500">
@@ -367,7 +367,7 @@ include '../includes/header.php';
                     loading="lazy"
                     allowfullscreen
                     referrerpolicy="no-referrer-when-downgrade"
-                    title="Client Location"
+                    title="Customer Location"
                 ></iframe>
 
             <?php else: ?>
@@ -385,11 +385,11 @@ include '../includes/header.php';
                     </p>
 
                     <p class="text-xs text-slate-500 mt-1">
-                        Add a client address to display its map location.
+                        Add a customer address to display its map location.
                     </p>
 
                     <a
-                        href="edit_client.php?id=<?= $id ?>"
+                        href="edit_customer.php?id=<?= $id ?>"
                         class="mt-4 px-4 py-2 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs hover:bg-indigo-500/25 transition"
                     >
 
@@ -425,13 +425,13 @@ include '../includes/header.php';
 <div class="flex justify-end mt-5">
 
     <a
-        href="edit_client.php?id=<?= $id ?>"
+        href="edit_customer.php?id=<?= $id ?>"
         class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold hover:-translate-y-0.5 transition-all"
     >
 
         <i class="fas fa-edit mr-1"></i>
 
-        Edit Client Details
+        Edit Customer Details
 
     </a>
 

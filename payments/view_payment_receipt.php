@@ -77,9 +77,9 @@ if ($ref_id <= 0) {
 if ($ref_type === 'sale') {
 
     $stmt = $conn->prepare("
-        SELECT s.*, c.client_name, c.phone, c.address, c.gst_no
+        SELECT s.*, c.customer_name, c.phone, c.address, c.gst_no
         FROM sales s
-        LEFT JOIN clients c ON s.client_id = c.id
+        LEFT JOIN customers c ON s.client_id = c.id
         WHERE s.id = ?
         LIMIT 1
     ");
@@ -97,7 +97,7 @@ if ($ref_type === 'sale') {
     $invoice_no = $source['sale_no'] ?? ('SALE-' . $ref_id);
     $invoice_label = 'Sale Invoice';
 
-    $party_name = $source['client_name'] ?? 'Walk-in Customer';
+    $party_name = $source['customer_name'] ?? 'Walk-in Customer';
     $party_phone = $source['phone'] ?? '';
     $party_address = $source['address'] ?? '';
     $party_gst = $source['gst_no'] ?? '';
@@ -111,9 +111,9 @@ if ($ref_type === 'sale') {
 elseif ($ref_type === 'service') {
 
     $stmt = $conn->prepare("
-        SELECT sv.*, c.client_name, c.phone, c.address, c.gst_no
+        SELECT sv.*, c.customer_name, c.phone, c.address, c.gst_no
         FROM services sv
-        LEFT JOIN clients c ON sv.client_id = c.id
+        LEFT JOIN customers c ON sv.client_id = c.id
         WHERE sv.id = ?
         LIMIT 1
     ");
@@ -131,7 +131,7 @@ elseif ($ref_type === 'service') {
     $invoice_no = $source['service_no'] ?? ('SERVICE-' . $ref_id);
     $invoice_label = 'Service Invoice';
 
-    $party_name = $source['client_name'] ?? 'Walk-in Customer';
+    $party_name = $source['customer_name'] ?? 'Walk-in Customer';
     $party_phone = $source['phone'] ?? '';
     $party_address = $source['address'] ?? '';
     $party_gst = $source['gst_no'] ?? '';

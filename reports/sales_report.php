@@ -1,3 +1,4 @@
+
 <?php
 // ============================================================
 // FILE: reports/sales_report.php
@@ -123,7 +124,7 @@ if ($report_error === '') {
 
             COALESCE(s.payment_mode, '') AS payment_mode,
 
-            COALESCE(c.client_name, 'Walk-in') AS client_name,
+            COALESCE(c.customer_name, 'Walk-in') AS customer_name,
 
             'Sale' AS transaction_type,
 
@@ -140,7 +141,7 @@ if ($report_error === '') {
 
         FROM sales s
 
-        LEFT JOIN clients c
+        LEFT JOIN customers c
             ON c.id = s.client_id
 
         WHERE
@@ -165,7 +166,7 @@ if ($report_error === '') {
 
             COALESCE(sv.payment_mode, '') AS payment_mode,
 
-            COALESCE(c.client_name, 'Walk-in') AS client_name,
+            COALESCE(c.customer_name, 'Walk-in') AS customer_name,
 
             'Service' AS transaction_type,
 
@@ -173,7 +174,7 @@ if ($report_error === '') {
 
         FROM services sv
 
-        LEFT JOIN clients c
+        LEFT JOIN customers c
             ON c.id = sv.client_id
 
         WHERE
@@ -791,7 +792,7 @@ include '../includes/header.php';
                         </th>
 
                         <th class="px-4 py-3 text-slate-400 font-medium">
-                            Client
+                            Customer
                         </th>
 
                         <th class="px-4 py-3 text-slate-400 font-medium">
@@ -885,13 +886,13 @@ include '../includes/header.php';
 
                                 </td>
 
-                                <!-- CLIENT -->
+                                <!-- CUSTOMER -->
 
                                 <td
                                     class="px-4 py-3 text-white"
-                                    data-export="<?= e($t['client_name']) ?>">
+                                    data-export="<?= e($t['customer_name']) ?>">
 
-                                    <?= e($t['client_name']) ?>
+                                    <?= e($t['customer_name']) ?>
 
                                 </td>
 

@@ -65,12 +65,12 @@ if ($service_id <= 0) {
 $stmt = $conn->prepare("
     SELECT
         s.*,
-        c.client_name,
+        c.customer_name,
         c.phone,
         c.address,
         c.gst_no
     FROM services s
-    LEFT JOIN clients c ON s.client_id = c.id
+    LEFT JOIN customers c ON s.client_id = c.id
     WHERE s.id = ?
     LIMIT 1
 ");
@@ -399,7 +399,7 @@ include '../includes/header.php';
             </div>
 
             <div class="text-white font-bold text-base">
-                <?= e($service['client_name'] ?? 'Walk-in Customer') ?>
+                <?= e($service['customer_name'] ?? 'Walk-in Customer') ?>
             </div>
 
             <?php if (!empty($service['phone'])): ?>

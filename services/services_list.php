@@ -71,10 +71,10 @@ $offset = ($page - 1) * $perPage;
 $sql = "
     SELECT
         sv.*,
-        c.client_name,
+        c.customer_name,
         s.sale_no
     FROM services sv
-    LEFT JOIN clients c ON sv.client_id = c.id
+    LEFT JOIN customers c ON sv.client_id = c.id
     LEFT JOIN sales s ON sv.sale_id = s.id
     ORDER BY sv.created_at DESC, sv.id DESC
     LIMIT $perPage OFFSET $offset
@@ -230,7 +230,7 @@ include '../includes/header.php';
                     </th>
 
                     <th class="px-4 py-3 text-slate-400 font-medium">
-                        Client
+                        Customer
                     </th>
 
                     <th class="px-4 py-3 text-slate-400 font-medium">
@@ -310,10 +310,10 @@ include '../includes/header.php';
                             <?= e($srv['service_no']) ?>
                         </td>
 
-                        <!-- CLIENT -->
+                        <!-- CUSTOMER -->
 
                         <td class="px-4 py-3 text-white">
-                            <?= e($srv['client_name'] ?? 'Walk-in') ?>
+                            <?= e($srv['customer_name'] ?? 'Walk-in') ?>
                         </td>
 
                         <!-- SOURCE -->

@@ -237,14 +237,14 @@ if ($canServices) {
 }
 
 // ============================================================
-// 8. FETCH CLIENT COUNT
+// 8. FETCH CUSTOMER COUNT
 // ============================================================
 
 if ($canClients) {
 
     $clientData = dashboard_fetch_one($conn, "
         SELECT COUNT(*) AS total
-        FROM clients
+        FROM customers
         WHERE is_active = 1
     ");
 
@@ -403,12 +403,12 @@ if ($canSales) {
             s.sale_no,
             s.grand_total,
             s.status,
-            c.client_name,
+            c.customer_name,
             s.created_at
 
         FROM sales s
 
-        LEFT JOIN clients c
+        LEFT JOIN customers c
             ON s.client_id = c.id
 
         ORDER BY s.created_at DESC
@@ -429,12 +429,12 @@ if ($canServices) {
             sv.service_no,
             sv.total_amount,
             sv.status,
-            c.client_name,
+            c.customer_name,
             sv.created_at
 
         FROM services sv
 
-        LEFT JOIN clients c
+        LEFT JOIN customers c
             ON sv.client_id = c.id
 
         ORDER BY sv.created_at DESC
@@ -457,11 +457,11 @@ if ($canPayments) {
             p.payment_mode,
             p.ref_type,
             p.created_at,
-            c.client_name
+            c.customer_name
 
         FROM payments p
 
-        LEFT JOIN clients c
+        LEFT JOIN customers c
             ON p.client_id = c.id
 
         ORDER BY p.created_at DESC
@@ -520,13 +520,13 @@ if ($canPurchases) {
     ];
 }
 
-// Clients
+// Customers
 if ($canClients) {
 
     $quickAccess[] = [
         'icon' => 'fa-users',
-        'label' => 'Clients',
-        'link' => 'clients/clients_list.php',
+        'label' => 'Customers',
+        'link' => 'customers/customers_list.php',
         'color' => 'blue'
     ];
 }
@@ -622,7 +622,7 @@ if ($canClientReport) {
 
     $quickAccess[] = [
         'icon' => 'fa-user-chart',
-        'label' => 'Client Report',
+        'label' => 'Customer Report',
         'link' => 'reports/client_report.php',
         'color' => 'blue'
     ];
@@ -866,7 +866,7 @@ include 'includes/header.php';
     <?php endif; ?>
 
 
-    <!-- CLIENTS -->
+    <!-- CUSTOMERS -->
 
     <?php if ($canClients): ?>
 
@@ -881,7 +881,7 @@ include 'includes/header.php';
                     </div>
 
                     <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium mt-1">
-                        Total Clients
+                        Total Customers
                     </div>
 
                 </div>
@@ -1256,7 +1256,7 @@ include 'includes/header.php';
                                 </div>
 
                                 <div class="text-[10px] text-slate-400 truncate">
-                                    <?= e($s['client_name'] ?? '-') ?>
+                                    <?= e($s['customer_name'] ?? '-') ?>
                                 </div>
 
                             </div>
@@ -1345,7 +1345,7 @@ include 'includes/header.php';
                                 </div>
 
                                 <div class="text-[10px] text-slate-400 truncate">
-                                    <?= e($sv['client_name'] ?? '-') ?>
+                                    <?= e($sv['customer_name'] ?? '-') ?>
                                 </div>
 
                             </div>
@@ -1435,7 +1435,7 @@ include 'includes/header.php';
 
                                 <div class="text-[10px] text-slate-400 truncate">
 
-                                    <?= e($p['client_name'] ?? 'Vendor') ?>
+                                    <?= e($p['customer_name'] ?? 'Vendor') ?>
 
                                     · <?= e(ucfirst($p['payment_mode'] ?? '')) ?>
 

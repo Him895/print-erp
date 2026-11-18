@@ -1,3 +1,4 @@
+
 <?php
 // ============================================================
 // FILE: services/add_service.php
@@ -23,11 +24,11 @@ $old_paid_amount = '0';
 $old_payment_mode = 'cash';
 $old_notes = '';
 
-$clients = $conn->query("
-    SELECT id, client_name, phone
-    FROM clients
+$customers = $conn->query("
+    SELECT id, customer_name, phone
+    FROM customers
     WHERE is_active = 1
-    ORDER BY client_name
+    ORDER BY customer_name
 ")->fetch_all(MYSQLI_ASSOC);
 
 // ============================================================
@@ -99,27 +100,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
     // --------------------------------------------------------
-    // CLIENT VALIDATION
+    // CUSTOMER VALIDATION
     // --------------------------------------------------------
 
     $client_is_valid = false;
 
     if ($old_client_id > 0) {
-        $clientCheck = $conn->prepare("
+        $customerCheck = $conn->prepare("
             SELECT id
-            FROM clients
+            FROM customers
             WHERE id = ? AND is_active = 1
             LIMIT 1
         ");
 
-        if ($clientCheck) {
-            $clientCheck->bind_param('i', $old_client_id);
-            $clientCheck->execute();
-            $clientCheck->store_result();
+        if ($customerCheck) {
+            $customerCheck->bind_param('i', $old_client_id);
+            $customerCheck->execute();
+            $customerCheck->store_result();
 
-            $client_is_valid = ($clientCheck->num_rows === 1);
+            $client_is_valid = ($customerCheck->num_rows === 1);
 
-            $clientCheck->close();
+            $customerCheck->close();
         }
     }
 
@@ -128,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // --------------------------------------------------------
 
     if (!$client_is_valid) {
-        $error = 'Please select a valid active client.';
+        $error = 'Please select a valid active customer.';
     } elseif (!$valid_date) {
         $error = 'Please select a valid service date.';
     } elseif ($gst_percent < 0) {
@@ -721,22 +722,22 @@ include '../includes/header.php';
       class="glass-dark rounded-2xl p-5 max-w-5xl"
       id="serviceForm">
 
-    <!-- CLIENT DETAILS -->
+    <!-- CUSTOMER DETAILS -->
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 pb-6 border-b border-white/10">
 
         <div>
             <label class="text-xs text-slate-400 mb-1 block">
-                Client *
+                Customer *
             </label>
 
-            <select name="client_id" id="clientSelect" class="w-full" required>
-                <option value="">-- Select Client --</option>
+            <select name="client_id" id="customerSelect" class="w-full" required>
+                <option value="">-- Select Customer --</option>
 
-                <?php foreach ($clients as $c): ?>
+                <?php foreach ($customers as $c): ?>
                     <option value="<?= (int)$c['id'] ?>"
                         <?= ((int)$old_client_id === (int)$c['id']) ? 'selected' : '' ?>>
-                        <?= e($c['client_name']) ?>
+                        <?= e($c['customer_name']) ?>
                         <?= !empty($c['phone']) ? ' — ' . e($c['phone']) : '' ?>
                     </option>
                 <?php endforeach; ?>
@@ -1021,8 +1022,8 @@ function buildOptions(list, selected) {
 
 $(document).ready(function() {
 
-    $('#clientSelect').select2({
-        placeholder: 'Search client by name or phone...',
+    $('#customerSelect').select2({
+        placeholder: 'Search customer by name or phone...',
         allowClear: true,
         width: '100%'
     });

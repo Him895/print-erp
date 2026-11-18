@@ -47,7 +47,7 @@ $baseSql = "
         CONCAT('SAL-', s.id) AS unique_id,
         s.sale_no AS ref_no,
         s.sale_date AS date,
-        c.client_name AS party_name,
+        c.customer_name AS party_name,
         'Receivable' AS type,
 
         GREATEST(
@@ -69,7 +69,7 @@ $baseSql = "
 
     FROM sales s
 
-    LEFT JOIN clients c
+    LEFT JOIN customers c
         ON s.client_id = c.id
 
     LEFT JOIN (
@@ -143,7 +143,7 @@ $baseSql = "
         CONCAT('SRV-', sv.id) AS unique_id,
         sv.service_no AS ref_no,
         sv.service_date AS date,
-        c.client_name AS party_name,
+        c.customer_name AS party_name,
         'Receivable' AS type,
 
         GREATEST(
@@ -165,7 +165,7 @@ $baseSql = "
 
     FROM services sv
 
-    LEFT JOIN clients c
+    LEFT JOIN customers c
         ON sv.client_id = c.id
 
     LEFT JOIN (
@@ -194,9 +194,9 @@ $baseSql = "
         pay.payment_date AS date,
 
         COALESCE(
-            c1.client_name,
+            c1.customer_name,
             v.vendor_name,
-            c2.client_name,
+            c2.customer_name,
             'Walk-in'
         ) AS party_name,
 
@@ -239,14 +239,14 @@ $baseSql = "
         ON pay.ref_type = 'sale'
         AND pay.ref_id = s.id
 
-    LEFT JOIN clients c1
+    LEFT JOIN customers c1
         ON s.client_id = c1.id
 
     LEFT JOIN services sv
         ON pay.ref_type = 'service'
         AND pay.ref_id = sv.id
 
-    LEFT JOIN clients c2
+    LEFT JOIN customers c2
         ON sv.client_id = c2.id
 
     LEFT JOIN product_purchase p

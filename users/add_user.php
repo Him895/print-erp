@@ -112,9 +112,7 @@ foreach ($permissions as $permission) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // --------------------------------------------------------
     // CSRF VALIDATION
-    // --------------------------------------------------------
 
     if (!user_module_verify_csrf()) {
 
@@ -123,9 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // --------------------------------------------------------
     // READ FORM VALUES
-    // --------------------------------------------------------
 
     $full_name = trim($_POST['full_name'] ?? '');
 
@@ -142,9 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $is_active = isset($_POST['is_active']) ? 1 : 0;
 
 
-    // --------------------------------------------------------
-    // 7. BASIC VALIDATION
-    // --------------------------------------------------------
+    // BASIC VALIDATION
 
     if ($full_name === '') {
 
@@ -172,9 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // --------------------------------------------------------
-    // 8. ROLE VALIDATION
-    // --------------------------------------------------------
+    // ROLE VALIDATION
 
     if (
         $role_id <= 0 ||
@@ -193,16 +185,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // Get selected role details
-
     $selected_role = $roles[$role_id] ?? null;
 
     $selected_role_key = $selected_role['role_key'] ?? '';
 
     $selected_role_name = $selected_role['role_name'] ?? '';
 
-
-    // Admin cannot use custom permission mode
 
     if (
         $selected_role_key === 'admin' &&
@@ -214,9 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // --------------------------------------------------------
-    // 9. PASSWORD VALIDATION
-    // --------------------------------------------------------
+    // PASSWORD VALIDATION
 
     if (strlen($password) < 8) {
 
@@ -232,9 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // --------------------------------------------------------
-    // 10. EMAIL DUPLICATE CHECK
-    // --------------------------------------------------------
+    // EMAIL DUPLICATE CHECK
 
     if (
         $email !== '' &&
@@ -275,9 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // --------------------------------------------------------
-    // 11. READ AND VALIDATE PERMISSIONS
-    // --------------------------------------------------------
+    // READ AND VALIDATE PERMISSIONS
 
     $posted_permissions = $_POST['permissions'] ?? [];
 
@@ -300,8 +282,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
 
-    // Keep only valid active permission IDs
-
     $selected_permissions = array_values(
         array_intersect(
             $selected_permissions,
@@ -310,17 +290,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
 
-    // --------------------------------------------------------
     // ROLE BASED PERMISSION VALIDATION
-    // --------------------------------------------------------
 
     if (
         $selected_role_key !== 'admin' &&
         $permission_mode === 'role' &&
         $selected_role
     ) {
-
-        // Selected role must contain Dashboard permission
 
         if ($dashboard_permission_id <= 0) {
 
@@ -376,9 +352,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // --------------------------------------------------------
     // CUSTOM PERMISSION VALIDATION
-    // --------------------------------------------------------
 
     if (
         $selected_role_key !== 'admin' &&
@@ -390,8 +364,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Dashboard permission is missing or inactive.';
 
         } else {
-
-            // Dashboard is mandatory - add server side
 
             if (
                 !in_array(
@@ -410,24 +382,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    // --------------------------------------------------------
     // ADMIN PERMISSION HANDLING
-    // --------------------------------------------------------
 
     if ($selected_role_key === 'admin') {
 
         $permission_mode = 'role';
-
-        // Admin receives all permissions through config.php
 
         $selected_permissions = [];
 
     }
 
 
-    // --------------------------------------------------------
-    // 12. CREATE USER
-    // --------------------------------------------------------
+    // CREATE USER
 
     if (empty($errors)) {
 
@@ -436,9 +402,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conn->begin_transaction();
 
 
-            // ------------------------------------------------
             // HASH PASSWORD
-            // ------------------------------------------------
 
             $hashed_password = password_hash(
                 $password,
@@ -452,9 +416,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
 
-            // ------------------------------------------------
             // INSERT USER
-            // ------------------------------------------------
 
             $insert_user = $conn->prepare("
                 INSERT INTO users
@@ -503,9 +465,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $insert_user->close();
 
 
-            // ------------------------------------------------
             // SAVE CUSTOM PERMISSIONS
-            // ------------------------------------------------
 
             if ($permission_mode === 'custom') {
 
@@ -517,9 +477,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             } else {
 
-                // Role Based / Admin:
-                // No individual user permission entries needed
-
                 user_module_save_permissions(
                     $conn,
                     $new_user_id,
@@ -529,16 +486,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
 
-            // ------------------------------------------------
             // COMMIT
-            // ------------------------------------------------
 
             $conn->commit();
 
 
-            // ------------------------------------------------
             // SUCCESS
-            // ------------------------------------------------
 
             set_flash(
                 'success',
@@ -568,28 +521,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 // ------------------------------------------------------------
-// 13. HEADER
+// 7. HEADER
 // ------------------------------------------------------------
 
 include '../includes/header.php';
 
 ?>
 
-<div class="space-y-6">
+<div class="space-y-4">
 
 
     <!-- PAGE HEADER -->
 
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
         <div>
 
-            <h1 class="text-2xl font-bold text-white">
+            <h1 class="text-xl font-bold text-white">
                 Add New User
             </h1>
 
-            <p class="text-sm text-gray-400 mt-1">
-                Create a user account and assign dynamic roles and permissions.
+            <p class="text-xs text-gray-400 mt-1">
+                Create a user account and assign roles and permissions.
             </p>
 
         </div>
@@ -597,7 +550,7 @@ include '../includes/header.php';
 
         <a
             href="users_list.php"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white transition"
+            class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-sm transition"
         >
 
             <i class="fas fa-arrow-left"></i>
@@ -613,9 +566,9 @@ include '../includes/header.php';
 
     <?php if (!empty($errors)): ?>
 
-        <div class="rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+        <div class="rounded-xl border border-red-500/30 bg-red-500/10 p-3">
 
-            <div class="flex items-center gap-2 text-red-400 font-semibold mb-2">
+            <div class="flex items-center gap-2 text-red-400 text-sm font-semibold mb-2">
 
                 <i class="fas fa-exclamation-circle"></i>
 
@@ -623,7 +576,7 @@ include '../includes/header.php';
 
             </div>
 
-            <ul class="list-disc pl-6 space-y-1 text-sm text-red-300">
+            <ul class="list-disc pl-5 space-y-1 text-xs text-red-300">
 
                 <?php foreach ($errors as $error): ?>
 
@@ -640,7 +593,7 @@ include '../includes/header.php';
 
     <!-- USER FORM -->
 
-    <form method="POST" class="space-y-6">
+    <form method="POST" class="space-y-4">
 
         <input
             type="hidden"
@@ -651,19 +604,19 @@ include '../includes/header.php';
 
         <!-- BASIC DETAILS -->
 
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
+        <div class="rounded-xl border border-white/10 bg-white/5 p-4">
 
-            <div class="flex items-center gap-3 mb-6">
+            <div class="flex items-center gap-2.5 mb-4">
 
-                <div class="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-400 flex items-center justify-center">
 
-                    <i class="fas fa-user text-lg"></i>
+                    <i class="fas fa-user text-sm"></i>
 
                 </div>
 
                 <div>
 
-                    <h2 class="text-lg font-semibold text-white">
+                    <h2 class="text-base font-semibold text-white">
                         Basic Information
                     </h2>
 
@@ -676,14 +629,14 @@ include '../includes/header.php';
             </div>
 
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
 
 
                 <!-- FULL NAME -->
 
                 <div>
 
-                    <label class="block text-sm text-gray-300 mb-2">
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">
 
                         Full Name <span class="text-red-400">*</span>
 
@@ -696,7 +649,7 @@ include '../includes/header.php';
                         maxlength="100"
                         required
                         placeholder="Enter full name"
-                        class="w-full rounded-xl bg-gray-900/70 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-emerald-500"
+                        class="w-full rounded-lg bg-gray-900/70 border border-white/10 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-emerald-500"
                     >
 
                 </div>
@@ -706,7 +659,7 @@ include '../includes/header.php';
 
                 <div>
 
-                    <label class="block text-sm text-gray-300 mb-2">
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">
 
                         Email Address <span class="text-red-400">*</span>
 
@@ -719,7 +672,7 @@ include '../includes/header.php';
                         maxlength="120"
                         required
                         placeholder="Enter email address"
-                        class="w-full rounded-xl bg-gray-900/70 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-emerald-500"
+                        class="w-full rounded-lg bg-gray-900/70 border border-white/10 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-emerald-500"
                     >
 
                 </div>
@@ -729,7 +682,7 @@ include '../includes/header.php';
 
                 <div>
 
-                    <label class="block text-sm text-gray-300 mb-2">
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">
 
                         Password <span class="text-red-400">*</span>
 
@@ -742,11 +695,11 @@ include '../includes/header.php';
                         required
                         autocomplete="new-password"
                         placeholder="Minimum 8 characters"
-                        class="w-full rounded-xl bg-gray-900/70 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-emerald-500"
+                        class="w-full rounded-lg bg-gray-900/70 border border-white/10 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-emerald-500"
                     >
 
-                    <p class="text-xs text-gray-500 mt-2">
-                        Password must contain at least 8 characters.
+                    <p class="text-[11px] text-gray-500 mt-1">
+                        Minimum 8 characters.
                     </p>
 
                 </div>
@@ -756,7 +709,7 @@ include '../includes/header.php';
 
                 <div>
 
-                    <label class="block text-sm text-gray-300 mb-2">
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">
 
                         Confirm Password <span class="text-red-400">*</span>
 
@@ -769,7 +722,7 @@ include '../includes/header.php';
                         required
                         autocomplete="new-password"
                         placeholder="Confirm password"
-                        class="w-full rounded-xl bg-gray-900/70 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-emerald-500"
+                        class="w-full rounded-lg bg-gray-900/70 border border-white/10 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-emerald-500"
                     >
 
                 </div>
@@ -779,7 +732,7 @@ include '../includes/header.php';
 
                 <div>
 
-                    <label class="block text-sm text-gray-300 mb-2">
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">
 
                         User Role <span class="text-red-400">*</span>
 
@@ -789,7 +742,7 @@ include '../includes/header.php';
                         name="role_id"
                         id="userRole"
                         required
-                        class="w-full rounded-xl bg-gray-900/70 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-emerald-500"
+                        class="w-full rounded-lg bg-gray-900/70 border border-white/10 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-emerald-500"
                     >
 
                         <option value="">
@@ -816,7 +769,7 @@ include '../includes/header.php';
 
                     <?php if (empty($roles)): ?>
 
-                        <p class="text-xs text-red-400 mt-2">
+                        <p class="text-xs text-red-400 mt-1.5">
                             No active roles available. Please create or activate a role first.
                         </p>
 
@@ -829,7 +782,7 @@ include '../includes/header.php';
 
                 <div>
 
-                    <label class="block text-sm text-gray-300 mb-2">
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">
 
                         Permission Mode <span class="text-red-400">*</span>
 
@@ -839,7 +792,7 @@ include '../includes/header.php';
                         name="permission_mode"
                         id="permissionMode"
                         required
-                        class="w-full rounded-xl bg-gray-900/70 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-emerald-500"
+                        class="w-full rounded-lg bg-gray-900/70 border border-white/10 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-emerald-500"
                     >
 
                         <option
@@ -858,8 +811,8 @@ include '../includes/header.php';
 
                     </select>
 
-                    <p class="text-xs text-gray-500 mt-2">
-                        Role Based uses role permissions. Custom uses individually selected permissions.
+                    <p class="text-[11px] text-gray-500 mt-1">
+                        Role Based uses role permissions. Custom uses selected permissions.
                     </p>
 
                 </div>
@@ -869,11 +822,11 @@ include '../includes/header.php';
 
                 <div>
 
-                    <label class="block text-sm text-gray-300 mb-2">
+                    <label class="block text-xs font-medium text-gray-300 mb-1.5">
                         Account Status
                     </label>
 
-                    <label class="flex items-center gap-3 rounded-xl bg-gray-900/70 border border-white/10 px-4 py-3 cursor-pointer">
+                    <label class="flex items-center gap-2.5 rounded-lg bg-gray-900/70 border border-white/10 px-3 py-2.5 cursor-pointer">
 
                         <input
                             type="checkbox"
@@ -900,22 +853,22 @@ include '../includes/header.php';
 
         <div
             id="permissionSection"
-            class="rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6"
+            class="rounded-xl border border-white/10 bg-white/5 p-4"
         >
 
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2.5">
 
-                    <div class="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center">
+                    <div class="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center">
 
-                        <i class="fas fa-shield-alt text-lg"></i>
+                        <i class="fas fa-shield-alt text-sm"></i>
 
                     </div>
 
                     <div>
 
-                        <h2 class="text-lg font-semibold text-white">
+                        <h2 class="text-base font-semibold text-white">
                             Page Permissions
                         </h2>
 
@@ -933,7 +886,7 @@ include '../includes/header.php';
                     <button
                         type="button"
                         id="selectAllPermissions"
-                        class="px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-semibold"
+                        class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-semibold"
                     >
                         Select All
                     </button>
@@ -941,7 +894,7 @@ include '../includes/header.php';
                     <button
                         type="button"
                         id="clearAllPermissions"
-                        class="px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-semibold"
+                        class="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-semibold"
                     >
                         Clear All
                     </button>
@@ -955,20 +908,20 @@ include '../includes/header.php';
 
             <div
                 id="rolePermissionInfo"
-                class="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4 mb-5"
+                class="rounded-lg border border-blue-500/20 bg-blue-500/10 p-3 mb-4"
             >
 
-                <div class="flex gap-3">
+                <div class="flex gap-2.5">
 
-                    <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+                    <i class="fas fa-info-circle text-blue-400 mt-0.5 text-sm"></i>
 
-                    <div class="text-sm text-blue-200">
+                    <div class="text-xs text-blue-200">
 
                         <p class="font-semibold">
                             Role Based Permissions
                         </p>
 
-                        <p class="text-blue-100/80 mt-1">
+                        <p class="text-blue-100/80 mt-1 leading-relaxed">
                             This user will automatically receive permissions assigned to the selected role. Manage those permissions from Role Management.
                         </p>
 
@@ -981,20 +934,20 @@ include '../includes/header.php';
 
             <div
                 id="customPermissionInfo"
-                class="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 mb-5"
+                class="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 mb-4"
             >
 
-                <div class="flex gap-3">
+                <div class="flex gap-2.5">
 
-                    <i class="fas fa-info-circle text-amber-400 mt-0.5"></i>
+                    <i class="fas fa-info-circle text-amber-400 mt-0.5 text-sm"></i>
 
-                    <div class="text-sm text-amber-200">
+                    <div class="text-xs text-amber-200">
 
                         <p class="font-semibold">
                             Custom Permission Rules
                         </p>
 
-                        <ul class="list-disc pl-5 mt-2 space-y-1 text-amber-100/80">
+                        <ul class="list-disc pl-4 mt-1.5 space-y-1 text-amber-100/80">
 
                             <li>Only individually selected permissions will be assigned.</li>
 
@@ -1013,11 +966,11 @@ include '../includes/header.php';
 
             <?php if (empty($permissions)): ?>
 
-                <div class="text-center py-8 text-gray-400">
+                <div class="text-center py-6 text-gray-400">
 
-                    <i class="fas fa-exclamation-triangle text-2xl mb-3"></i>
+                    <i class="fas fa-exclamation-triangle text-xl mb-2"></i>
 
-                    <p>No active permissions found.</p>
+                    <p class="text-sm">No active permissions found.</p>
 
                     <p class="text-xs mt-1">
                         Please check the permissions table.
@@ -1028,21 +981,21 @@ include '../includes/header.php';
             <?php else: ?>
 
 
-                <div class="space-y-5" id="permissionContainer">
+                <div class="space-y-3" id="permissionContainer">
 
                     <?php foreach ($permission_groups as $group_name => $group_permissions): ?>
 
-                        <div class="rounded-xl border border-white/10 overflow-hidden permission-group">
+                        <div class="rounded-lg border border-white/10 overflow-hidden permission-group">
 
-                            <div class="bg-white/5 px-4 py-3 flex items-center justify-between">
+                            <div class="bg-white/5 px-3 py-2 flex items-center justify-between">
 
-                                <h3 class="text-sm font-semibold text-white">
+                                <h3 class="text-xs font-semibold text-white">
 
                                     <?= e(ucwords(str_replace(['_', '-'], ' ', $group_name))) ?>
 
                                 </h3>
 
-                                <span class="text-xs text-gray-400">
+                                <span class="text-[11px] text-gray-400">
 
                                     <?= count($group_permissions) ?> permissions
 
@@ -1051,7 +1004,7 @@ include '../includes/header.php';
                             </div>
 
 
-                            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
 
                                 <?php foreach ($group_permissions as $permission): ?>
 
@@ -1065,7 +1018,7 @@ include '../includes/header.php';
 
                                     ?>
 
-                                    <label class="permission-option flex items-start gap-3 p-3 rounded-lg bg-gray-900/50 border border-white/5 hover:border-emerald-500/30 cursor-pointer transition">
+                                    <label class="permission-option flex items-start gap-2.5 p-2.5 rounded-lg bg-gray-900/50 border border-white/5 hover:border-emerald-500/30 cursor-pointer transition">
 
                                         <input
                                             type="checkbox"
@@ -1074,18 +1027,18 @@ include '../includes/header.php';
                                             data-dashboard="<?= $is_dashboard ? '1' : '0' ?>"
                                             <?= in_array($permission_id, $selected_permissions, true) ? 'checked' : '' ?>
                                             <?= $is_dashboard ? 'checked disabled' : '' ?>
-                                            class="permission-checkbox w-4 h-4 mt-0.5 accent-emerald-500"
+                                            class="permission-checkbox w-3.5 h-3.5 mt-0.5 accent-emerald-500 shrink-0"
                                         >
 
-                                        <span>
+                                        <span class="min-w-0">
 
-                                            <span class="block text-sm text-gray-200 font-medium">
+                                            <span class="block text-xs text-gray-200 font-medium">
 
                                                 <?= e($permission['permission_name']) ?>
 
                                                 <?php if ($is_dashboard): ?>
 
-                                                    <span class="text-xs text-emerald-400 ml-1">
+                                                    <span class="text-[10px] text-emerald-400 ml-1">
                                                         Required
                                                     </span>
 
@@ -1093,7 +1046,7 @@ include '../includes/header.php';
 
                                             </span>
 
-                                            <span class="block text-xs text-gray-500 mt-1">
+                                            <span class="block text-[10px] text-gray-500 mt-1 break-all">
 
                                                 <?= e($permission['page_path']) ?>
 
@@ -1120,11 +1073,11 @@ include '../includes/header.php';
 
         <!-- FORM ACTIONS -->
 
-        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
 
             <a
                 href="users_list.php"
-                class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-center font-semibold transition"
+                class="px-5 py-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-sm text-center font-semibold transition"
             >
                 Cancel
             </a>
@@ -1133,10 +1086,10 @@ include '../includes/header.php';
             <button
                 type="submit"
                 <?= empty($roles) ? 'disabled' : '' ?>
-                class="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold transition"
+                class="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold transition"
             >
 
-                <i class="fas fa-user-plus mr-2"></i>
+                <i class="fas fa-user-plus mr-1.5"></i>
 
                 Create User
 

@@ -1,33 +1,33 @@
 
 <?php
 // ============================================================
-// FILE: clients/clients_list.php
+// FILE: customers/customers_list.php
 // DESCRIPTION: Customer List with Google Maps Location Link
 // ============================================================
 
 require_once '../config/config.php';
-require_permission('clients');
+require_permission('customers');
 
 $page_title = 'Customers';
 
 // ------------------------------------------------------------
-// 1. FETCH ALL ACTIVE CLIENTS
+// 1. FETCH ALL ACTIVE CUSTOMERS
 // ------------------------------------------------------------
 
-$clients = [];
+$customers = [];
 
 $result = $conn->query("
     SELECT *
-    FROM clients
+    FROM customers
     WHERE is_active = 1
     ORDER BY created_at DESC
 ");
 
 if ($result) {
-    $clients = $result->fetch_all(MYSQLI_ASSOC);
+    $customers = $result->fetch_all(MYSQLI_ASSOC);
 }
 
-$totalClients = count($clients);
+$totalCustomers = count($customers);
 
 include '../includes/header.php';
 ?>
@@ -49,7 +49,7 @@ include '../includes/header.php';
     </div>
 
     <a
-        href="add_client.php"
+        href="add_customer.php"
         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/40 transition-all"
     >
         <i class="fas fa-plus-circle"></i>
@@ -68,11 +68,11 @@ include '../includes/header.php';
     <div class="glass-dark rounded-xl p-4">
 
         <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-            Total Clients
+            Total Customers
         </div>
 
         <div class="text-2xl font-bold bg-gradient-to-r from-blue-300 to-blue-500 bg-clip-text text-transparent mt-1">
-            <?= $totalClients ?>
+            <?= $totalCustomers ?>
         </div>
 
         <div class="text-[10px] text-slate-500 mt-1">
@@ -85,7 +85,7 @@ include '../includes/header.php';
 
 
 <!-- =========================================================
-     CLIENT TABLE
+     CUSTOMER TABLE
 ========================================================= -->
 
 <div class="glass-dark rounded-2xl overflow-hidden">
@@ -125,18 +125,18 @@ include '../includes/header.php';
 
             <tbody>
 
-                <?php if (!empty($clients)): ?>
+                <?php if (!empty($customers)): ?>
 
-                    <?php foreach ($clients as $i => $c): ?>
+                    <?php foreach ($customers as $i => $c): ?>
 
                         <?php
-                        $clientAddress = trim($c['address'] ?? '');
+                        $customerAddress = trim($c['address'] ?? '');
 
                         $mapUrl = '';
 
-                        if ($clientAddress !== '') {
+                        if ($customerAddress !== '') {
                             $mapUrl = 'https://www.google.com/maps/search/?api=1&query='
-                                . rawurlencode($clientAddress);
+                                . rawurlencode($customerAddress);
                         }
                         ?>
 
@@ -162,20 +162,20 @@ include '../includes/header.php';
                                     <div class="min-w-0">
 
                                         <span class="text-white font-medium block">
-                                            <?= e($c['client_name']) ?>
+                                            <?= e($c['customer_name']) ?>
                                         </span>
 
-                                        <?php if ($clientAddress !== ''): ?>
+                                        <?php if ($customerAddress !== ''): ?>
 
                                             <a
                                                 href="<?= e($mapUrl) ?>"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 class="text-[10px] text-slate-400 hover:text-indigo-300 block truncate max-w-[220px] mt-1 transition"
-                                                title="Open client address in Google Maps"
+                                                title="Open customer address in Google Maps"
                                             >
                                                 <i class="fas fa-map-marker-alt text-rose-400 mr-1"></i>
-                                                <?= e($clientAddress) ?>
+                                                <?= e($customerAddress) ?>
                                             </a>
 
                                         <?php else: ?>
@@ -235,67 +235,63 @@ include '../includes/header.php';
 
                             <!-- ACTIONS -->
 
-                            
-<!-- ACTIONS -->
+                            <td class="px-4 py-3">
 
-<td class="px-4 py-3">
+                                <div class="flex items-center justify-center gap-1.5">
 
-    <div class="flex items-center justify-center gap-1.5">
+                                    <!-- VIEW CUSTOMER -->
 
-        <!-- VIEW CLIENT -->
-
-        <a
-            href="view_client.php?id=<?= (int) $c['id'] ?>"
-            class="w-7 h-7 rounded-lg bg-sky-500/15 text-sky-300 flex items-center justify-center hover:bg-sky-500/30 transition"
-            title="View Client"
-        >
-            <i class="fas fa-eye text-[10px]"></i>
-        </a>
+                                    <a
+                                        href="view_customer.php?id=<?= (int) $c['id'] ?>"
+                                        class="w-7 h-7 rounded-lg bg-sky-500/15 text-sky-300 flex items-center justify-center hover:bg-sky-500/30 transition"
+                                        title="View Customer"
+                                    >
+                                        <i class="fas fa-eye text-[10px]"></i>
+                                    </a>
 
 
-        <!-- GOOGLE MAPS LOCATION -->
+                                    <!-- GOOGLE MAPS LOCATION -->
 
-        <?php if ($clientAddress !== ''): ?>
+                                    <?php if ($customerAddress !== ''): ?>
 
-            <a
-                href="<?= e($mapUrl) ?>"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center hover:bg-emerald-500/30 transition"
-                title="View Location on Google Maps"
-            >
-                <i class="fas fa-map-marker-alt text-[10px]"></i>
-            </a>
+                                        <a
+                                            href="<?= e($mapUrl) ?>"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center hover:bg-emerald-500/30 transition"
+                                            title="View Location on Google Maps"
+                                        >
+                                            <i class="fas fa-map-marker-alt text-[10px]"></i>
+                                        </a>
 
-        <?php endif; ?>
-
-
-        <!-- EDIT CLIENT -->
-
-        <a
-            href="edit_client.php?id=<?= (int) $c['id'] ?>"
-            class="w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-300 flex items-center justify-center hover:bg-indigo-500/30 transition"
-            title="Edit Client"
-        >
-            <i class="fas fa-edit text-[10px]"></i>
-        </a>
+                                    <?php endif; ?>
 
 
-        <!-- DELETE CLIENT -->
+                                    <!-- EDIT CUSTOMER -->
 
-        <a
-            href="delete_client.php?id=<?= (int) $c['id'] ?>"
-            onclick="return confirm('Delete this client?')"
-            class="w-7 h-7 rounded-lg bg-rose-500/15 text-rose-300 flex items-center justify-center hover:bg-rose-500/30 transition"
-            title="Delete Client"
-        >
-            <i class="fas fa-trash text-[10px]"></i>
-        </a>
+                                    <a
+                                        href="edit_customer.php?id=<?= (int) $c['id'] ?>"
+                                        class="w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-300 flex items-center justify-center hover:bg-indigo-500/30 transition"
+                                        title="Edit Customer"
+                                    >
+                                        <i class="fas fa-edit text-[10px]"></i>
+                                    </a>
 
-    </div>
 
-</td>
+                                    <!-- DELETE CUSTOMER -->
 
+                                    <a
+                                        href="delete_customer.php?id=<?= (int) $c['id'] ?>"
+                                        onclick="return confirm('Delete this customer?')"
+                                        class="w-7 h-7 rounded-lg bg-rose-500/15 text-rose-300 flex items-center justify-center hover:bg-rose-500/30 transition"
+                                        title="Delete Customer"
+                                    >
+                                        <i class="fas fa-trash text-[10px]"></i>
+                                    </a>
+
+                                </div>
+
+                            </td>
 
                         </tr>
 
@@ -312,14 +308,14 @@ include '../includes/header.php';
                                 <i class="fas fa-users text-3xl block mb-2 opacity-30"></i>
 
                                 <div class="text-sm">
-                                    No clients yet
+                                    No customers yet
                                 </div>
 
                                 <a
-                                    href="add_client.php"
+                                    href="add_customer.php"
                                     class="inline-block mt-2 text-indigo-400 hover:text-indigo-300 text-xs underline"
                                 >
-                                    Add your first client →
+                                    Add your first customer →
                                 </a>
 
                             </div>

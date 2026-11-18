@@ -65,7 +65,7 @@ $all_menu = [
     'clients' => [
         'icon'  => 'fa-users',
         'label' => 'Customers',
-        'link'  => 'clients/clients_list.php',
+        'link'  => 'customers/customers_list.php',
         'color' => 'blue'
     ],
 

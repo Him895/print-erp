@@ -1,3 +1,4 @@
+
 <?php
 // ============================================================
 // FILE: sales/view_sale.php
@@ -9,9 +10,9 @@ $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) redirect('sales_list.php');
 
 // Fetch main sale
-$stmt = $conn->prepare("SELECT s.*, c.client_name, c.phone, c.address, c.gst_no 
+$stmt = $conn->prepare("SELECT s.*, c.customer_name, c.phone, c.address, c.gst_no 
     FROM sales s 
-    LEFT JOIN clients c ON s.client_id = c.id 
+    LEFT JOIN customers c ON s.client_id = c.id 
     WHERE s.id = ?");
 $stmt->bind_param('i', $id);
 $stmt->execute();
@@ -64,12 +65,12 @@ include '../includes/header.php';
         </div>
     </div>
 
-    <!-- Client Info -->
+    <!-- Customer Info -->
     <div class="mb-6 flex justify-between">
         <div>
             <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Billed To:</div>
             <?php if($sale['client_id'] > 0): ?>
-                <div class="text-white font-semibold"><?= e($sale['client_name']) ?></div>
+                <div class="text-white font-semibold"><?= e($sale['customer_name'] ?? 'Walk-in Customer') ?></div>
                 <?php if($sale['phone']): ?><div class="text-xs text-slate-400"><i class="fas fa-phone text-[10px] mr-1"></i><?= e($sale['phone']) ?></div><?php endif; ?>
                 <?php if($sale['gst_no']): ?><div class="text-xs text-slate-400">GST: <?= e($sale['gst_no']) ?></div><?php endif; ?>
             <?php else: ?>

@@ -32,13 +32,13 @@ if (!$service) {
 }
 
 // ------------------------------------------------------------
-// FETCH CLIENTS
+// FETCH CUSTOMERS
 // ------------------------------------------------------------
-$clients = $conn->query("
-    SELECT id, client_name
-    FROM clients
+$customers = $conn->query("
+    SELECT id, customer_name
+    FROM customers
     WHERE is_active = 1
-    ORDER BY client_name
+    ORDER BY customer_name
 ")->fetch_all(MYSQLI_ASSOC);
 
 // ------------------------------------------------------------
@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $total_qty = 0;
 
     if ($client_id <= 0) {
-        $error = 'Client select karna zaroori hai.';
+        $error = 'Customer select karna zaroori hai.';
     } elseif ($service_date === '') {
         $error = 'Service date required hai.';
     } elseif ($gst_percent < 0 || $gst_percent > 100) {
@@ -399,10 +399,10 @@ include '../includes/header.php';
                 <select name="client_id" required class="edit-input">
                     <option value="">Select Customer</option>
 
-                    <?php foreach ($clients as $c): ?>
+                    <?php foreach ($customers as $c): ?>
                         <option value="<?= (int)$c['id'] ?>"
                             <?= (int)$service['client_id'] === (int)$c['id'] ? 'selected' : '' ?>>
-                            <?= e($c['client_name']) ?>
+                            <?= e($c['customer_name']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

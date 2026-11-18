@@ -2,15 +2,15 @@
 <?php
 // ============================================================
 // FILE: reports/client_report.php
-// CLIENT REPORT
-// Client Search + Business + Outstanding + Pagination
+// CUSTOMER REPORT
+// Customer Search + Business + Outstanding + Pagination
 // Sales + Direct Services (No Double Counting)
 // Full Filtered Summary + CSV Export + Print/PDF
 // ============================================================
 
 require_once '../config/config.php';
 require_permission('reports.client');
-$page_title = 'Client Report';
+$page_title = 'Customer Report';
 
 // ------------------------------------------------------------
 // 1. FILTERS
@@ -22,14 +22,14 @@ $perPage = 25;
 $currentPage = max(1, (int)($_GET['page'] ?? 1));
 
 // ------------------------------------------------------------
-// 2. COMMON CLIENT FILTER
+// 2. COMMON CUSTOMER FILTER
 // ------------------------------------------------------------
 
 $where = "
     WHERE c.is_active = 1
     AND (
         ? = ''
-        OR c.client_name LIKE ?
+        OR c.customer_name LIKE ?
         OR c.phone LIKE ?
     )
 ";
@@ -45,7 +45,7 @@ $params = [
 $types = 'sss';
 
 // ------------------------------------------------------------
-// 3. CLIENT BUSINESS AGGREGATES
+// 3. CUSTOMER BUSINESS AGGREGATES
 //
 // Sales:
 // - Exclude cancelled sales
@@ -92,7 +92,7 @@ $aggregateJoins = "
 ";
 
 // ------------------------------------------------------------
-// 4. SUMMARY - ALL FILTERED CLIENTS
+// 4. SUMMARY - ALL FILTERED CUSTOMERS
 // ------------------------------------------------------------
 
 $summarySql = "
@@ -138,7 +138,7 @@ $summarySql = "
 
         COALESCE(SUM(COALESCE(sv.service_count, 0)), 0) AS total_services
 
-    FROM clients c
+    FROM customers c
 
     $aggregateJoins
 
@@ -148,7 +148,7 @@ $summarySql = "
 $summaryStmt = $conn->prepare($summarySql);
 
 if (!$summaryStmt) {
-    die('Unable to prepare client summary query.');
+    die('Unable to prepare customer summary query.');
 }
 
 $summaryStmt->bind_param($types, ...$params);
@@ -184,13 +184,13 @@ if ($currentPage > $totalPages) {
 $offset = ($currentPage - 1) * $perPage;
 
 // ------------------------------------------------------------
-// 6. FETCH CLIENTS - CURRENT PAGE
+// 6. FETCH CUSTOMERS - CURRENT PAGE
 // ------------------------------------------------------------
 
 $sql = "
     SELECT
         c.id,
-        c.client_name,
+        c.customer_name,
         c.phone,
 
         COALESCE(s.sales_count, 0) AS sales_count,
@@ -223,7 +223,7 @@ $sql = "
             + COALESCE(sv.service_count, 0)
         ) AS total_jobs
 
-    FROM clients c
+    FROM customers c
 
     $aggregateJoins
 
@@ -232,7 +232,7 @@ $sql = "
     ORDER BY
         total_due DESC,
         total_business DESC,
-        c.client_name ASC
+        c.customer_name ASC
 
     LIMIT $perPage OFFSET $offset
 ";
@@ -240,7 +240,7 @@ $sql = "
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
-    die('Unable to prepare client report query.');
+    die('Unable to prepare customer report query.');
 }
 
 $stmt->bind_param($types, ...$params);
@@ -381,11 +381,11 @@ include '../includes/header.php';
 
     <div>
         <h1 class="text-2xl font-bold text-white tracking-tight">
-            Client Report
+            Customer Report
         </h1>
 
         <p class="text-xs text-slate-400 mt-1">
-            Client business, payments and outstanding analysis
+            Customer business, payments and outstanding analysis
         </p>
     </div>
 
@@ -424,14 +424,14 @@ include '../includes/header.php';
         <div class="flex-1 w-full">
 
             <label class="text-[10px] text-slate-400 block mb-1">
-                Search Client
+                Search Customer
             </label>
 
             <input
                 type="text"
                 name="search"
                 value="<?= e($search) ?>"
-                placeholder="Enter client name or phone number"
+                placeholder="Enter customer name or phone number"
                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500/50"
             >
 
@@ -476,7 +476,7 @@ include '../includes/header.php';
         </h2>
 
         <p class="text-sm mt-1">
-            Client Business & Outstanding Report
+            Customer Business & Outstanding Report
         </p>
 
         <p class="text-xs mt-1">
@@ -504,7 +504,7 @@ include '../includes/header.php';
         <div class="glass-dark rounded-xl p-4 border border-white/10">
 
             <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-                Active Clients
+                Active Customers
             </div>
 
             <div class="text-2xl font-bold text-white mt-1">
@@ -512,7 +512,7 @@ include '../includes/header.php';
             </div>
 
             <div class="text-[10px] text-slate-500 mt-1">
-                Matching clients
+                Matching customers
             </div>
 
         </div>
@@ -576,7 +576,7 @@ include '../includes/header.php';
         <div class="glass-dark rounded-xl p-3 border border-white/10">
 
             <div class="text-[10px] text-slate-400 uppercase font-semibold">
-                Clients With Dues
+                Customers With Dues
             </div>
 
             <div class="text-xl font-bold text-rose-300 mt-1">
@@ -588,7 +588,7 @@ include '../includes/header.php';
         <div class="glass-dark rounded-xl p-3 border border-white/10">
 
             <div class="text-[10px] text-slate-400 uppercase font-semibold">
-                Business Clients
+                Business Customers
             </div>
 
             <div class="text-xl font-bold text-emerald-300 mt-1">
@@ -632,7 +632,7 @@ include '../includes/header.php';
         <div>
 
             <h2 class="text-sm font-bold text-white">
-                Client Business Details
+                Customer Business Details
             </h2>
 
             <p class="text-[10px] text-slate-400 mt-1">
@@ -640,7 +640,7 @@ include '../includes/header.php';
                 <?= $totalClients > 0 ? number_format($offset + 1) : 0 ?>
                 -
                 <?= number_format(min($offset + $perPage, $totalClients)) ?>
-                of <?= number_format($totalClients) ?> clients
+                of <?= number_format($totalClients) ?> customers
             </p>
 
         </div>
@@ -652,7 +652,7 @@ include '../includes/header.php';
     </div>
 
     <!-- ====================================================
-         CLIENT TABLE
+         CUSTOMER TABLE
     ===================================================== -->
 
     <div class="glass-dark rounded-2xl overflow-hidden border border-white/10">
@@ -670,7 +670,7 @@ include '../includes/header.php';
                         </th>
 
                         <th class="px-4 py-3 text-slate-400 font-medium whitespace-nowrap">
-                            Client Name
+                            Customer Name
                         </th>
 
                         <th class="px-4 py-3 text-slate-400 font-medium whitespace-nowrap">
@@ -728,7 +728,7 @@ include '../includes/header.php';
                                 </td>
 
                                 <td class="px-4 py-3 text-white font-semibold whitespace-nowrap">
-                                    <?= e($c['client_name']) ?>
+                                    <?= e($c['customer_name']) ?>
                                 </td>
 
                                 <td class="px-4 py-3 text-slate-300 whitespace-nowrap">
@@ -772,11 +772,11 @@ include '../includes/header.php';
                                     <i class="fas fa-users text-3xl mb-3"></i>
 
                                     <p class="text-sm font-semibold">
-                                        No Clients Found
+                                        No Customers Found
                                     </p>
 
                                     <p class="text-xs mt-1">
-                                        Try another client name or phone number.
+                                        Try another customer name or phone number.
                                     </p>
 
                                 </div>
@@ -882,7 +882,7 @@ include '../includes/header.php';
         <div class="flex justify-between text-xs text-gray-600">
 
             <span>
-                PrintERP - Client Report
+                PrintERP - Customer Report
             </span>
 
             <span>
@@ -945,7 +945,7 @@ function exportCSV() {
     });
 
     if (csv.length <= 1) {
-        alert('No client records available to export.');
+        alert('No customer records available to export.');
         return;
     }
 
@@ -963,7 +963,7 @@ function exportCSV() {
 
     link.href = url;
 
-    link.download = 'client_report_<?= date('Y-m-d') ?>_page_<?= $currentPage ?>.csv';
+    link.download = 'customer_report_<?= date('Y-m-d') ?>_page_<?= $currentPage ?>.csv';
 
     document.body.appendChild(link);
 

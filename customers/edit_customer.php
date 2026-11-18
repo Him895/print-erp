@@ -1,23 +1,63 @@
 
 <?php
 // ============================================================
-// FILE: clients/add_client.php
-// DESCRIPTION: Add Client with Live Google Map Preview
+// FILE: customers/edit_customer.php
+// DESCRIPTION: Edit Customer with Google Maps Preview
 // ============================================================
 
 require_once '../config/config.php';
-require_permission('clients');
+require_permission('customers');
 
-$page_title = 'Add Client';
+$page_title = 'Edit Customer';
+
+// ------------------------------------------------------------
+// 1. GET CUSTOMER ID
+// ------------------------------------------------------------
+
+$id = (int) ($_GET['id'] ?? 0);
+
+if ($id <= 0) {
+    redirect('customers_list.php');
+}
+
+// ------------------------------------------------------------
+// 2. FETCH CUSTOMER
+// ------------------------------------------------------------
+
+$stmt = $conn->prepare("
+    SELECT *
+    FROM customers
+    WHERE id = ?
+    AND is_active = 1
+    LIMIT 1
+");
+
+if (!$stmt) {
+    set_flash('error', 'Unable to fetch customer.');
+    redirect('customers_list.php');
+}
+
+$stmt->bind_param('i', $id);
+$stmt->execute();
+
+$customer = $stmt->get_result()->fetch_assoc();
+
+$stmt->close();
+
+if (!$customer) {
+    set_flash('error', 'Customer not found.');
+    redirect('customers_list.php');
+}
+
 $error = '';
 
 // ------------------------------------------------------------
-// 1. HANDLE FORM SUBMISSION
+// 3. HANDLE FORM SUBMISSION
 // ------------------------------------------------------------
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $name    = trim($_POST['client_name'] ?? '');
+    $name    = trim($_POST['customer_name'] ?? '');
     $phone   = trim($_POST['phone'] ?? '');
     $email   = trim($_POST['email'] ?? '');
     $gst     = trim($_POST['gst_no'] ?? '');
@@ -25,35 +65,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($name === '') {
 
-        $error = 'Client name required.';
+        $error = 'Customer name required.';
 
     } else {
 
         $stmt = $conn->prepare("
-            INSERT INTO clients
-            (
-                client_name,
-                phone,
-                email,
-                gst_no,
-                address
-            )
-            VALUES (?, ?, ?, ?, ?)
+            UPDATE customers
+            SET
+                customer_name = ?,
+                phone = ?,
+                email = ?,
+                gst_no = ?,
+                address = ?
+            WHERE id = ?
+            AND is_active = 1
         ");
 
         if (!$stmt) {
 
-            $error = 'Unable to prepare client query.';
+            $error = 'Unable to prepare update query.';
 
         } else {
 
             $stmt->bind_param(
-                'sssss',
+                'sssssi',
                 $name,
                 $phone,
                 $email,
                 $gst,
-                $address
+                $address,
+                $id
             );
 
             if ($stmt->execute()) {
@@ -62,14 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 set_flash(
                     'success',
-                    'Client added successfully!'
+                    'Customer updated successfully!'
                 );
 
-                redirect('clients_list.php');
+                redirect('customers_list.php');
 
             } else {
 
-                $error = 'Insert failed: ' . $stmt->error;
+                $error = 'Update failed: ' . $stmt->error;
                 $stmt->close();
 
             }
@@ -78,10 +119,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     }
 
+    // Preserve submitted values if validation fails
+    $customer['customer_name'] = $name;
+    $customer['phone'] = $phone;
+    $customer['email'] = $email;
+    $customer['gst_no'] = $gst;
+    $customer['address'] = $address;
+
 }
 
 // ------------------------------------------------------------
-// 2. HEADER
+// 4. HEADER
 // ------------------------------------------------------------
 
 include '../includes/header.php';
@@ -95,17 +143,19 @@ include '../includes/header.php';
 <div class="flex items-center justify-between gap-3 mb-5">
 
     <div>
+
         <h1 class="text-2xl font-bold text-white">
-            Add Client
+            Edit Customer
         </h1>
 
         <p class="text-xs text-slate-400 mt-0.5">
-            Add new customer with location preview
+            Update customer details · ID #<?= $id ?>
         </p>
+
     </div>
 
     <a
-        href="clients_list.php"
+        href="customers_list.php"
         class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-xs hover:bg-white/10 transition"
     >
         <i class="fas fa-arrow-left mr-1"></i>
@@ -113,6 +163,7 @@ include '../includes/header.php';
     </a>
 
 </div>
+
 
 <!-- =========================================================
      ERROR MESSAGE
@@ -132,7 +183,7 @@ include '../includes/header.php';
 
 
 <!-- =========================================================
-     ADD CLIENT FORM
+     EDIT CUSTOMER FORM
 ========================================================= -->
 
 <form
@@ -142,20 +193,20 @@ include '../includes/header.php';
 
     <div class="space-y-5">
 
-        <!-- CLIENT NAME -->
+        <!-- CUSTOMER NAME -->
 
         <div>
 
             <label class="text-xs text-slate-400 mb-1 block">
-                Client Name *
+                Customer Name *
             </label>
 
             <input
                 type="text"
-                name="client_name"
+                name="customer_name"
                 required
-                value="<?= e($_POST['client_name'] ?? '') ?>"
-                placeholder="e.g. Rahul Sharma"
+                value="<?= e($customer['customer_name']) ?>"
+                placeholder="Customer name"
                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-indigo-500/50"
             >
 
@@ -175,8 +226,8 @@ include '../includes/header.php';
                 <input
                     type="text"
                     name="phone"
-                    value="<?= e($_POST['phone'] ?? '') ?>"
-                    placeholder="e.g. 9876543210"
+                    value="<?= e($customer['phone'] ?? '') ?>"
+                    placeholder="Phone number"
                     class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-indigo-500/50"
                 >
 
@@ -192,8 +243,8 @@ include '../includes/header.php';
                 <input
                     type="email"
                     name="email"
-                    value="<?= e($_POST['email'] ?? '') ?>"
-                    placeholder="e.g. rahul@example.com"
+                    value="<?= e($customer['email'] ?? '') ?>"
+                    placeholder="Email address"
                     class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-indigo-500/50"
                 >
 
@@ -213,8 +264,8 @@ include '../includes/header.php';
             <input
                 type="text"
                 name="gst_no"
-                value="<?= e($_POST['gst_no'] ?? '') ?>"
-                placeholder="e.g. 22AAAAA0000A1Z5"
+                value="<?= e($customer['gst_no'] ?? '') ?>"
+                placeholder="GST Number"
                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-indigo-500/50"
             >
 
@@ -227,34 +278,50 @@ include '../includes/header.php';
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-            <!-- ADDRESS INPUT -->
+            <!-- ADDRESS -->
 
             <div>
 
                 <label class="text-xs text-slate-400 mb-2 block">
+
                     <i class="fas fa-map-marker-alt mr-1 text-indigo-400"></i>
-                    Client Address
+
+                    Customer Address
+
                 </label>
 
                 <textarea
                     name="address"
-                    id="clientAddress"
+                    id="customerAddress"
                     rows="6"
-                    placeholder="Enter complete client address..."
+                    placeholder="Enter complete customer address..."
                     class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-3 text-sm text-slate-200 outline-none focus:border-indigo-500/50 resize-none"
-                ><?= e($_POST['address'] ?? '') ?></textarea>
+                ><?= e($customer['address'] ?? '') ?></textarea>
+
 
                 <p class="text-[11px] text-slate-500 mt-2">
                     <i class="fas fa-info-circle mr-1"></i>
-                    Enter address to see its location on Google Maps.
+                    Edit address to update map preview automatically.
                 </p>
+
 
                 <div
                     id="mapStatus"
                     class="text-xs text-slate-500 mt-3"
                 >
-                    <i class="fas fa-map mr-1"></i>
-                    Default location: Nagpur, Maharashtra
+
+                    <?php if (!empty($customer['address'])): ?>
+
+                        <i class="fas fa-map-marker-alt text-emerald-400 mr-1"></i>
+                        Existing customer address loaded.
+
+                    <?php else: ?>
+
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Enter customer address to view location.
+
+                    <?php endif; ?>
+
                 </div>
 
             </div>
@@ -267,13 +334,19 @@ include '../includes/header.php';
                 <div class="flex items-center justify-between mb-2">
 
                     <label class="text-xs text-slate-400 block">
+
                         <i class="fas fa-globe mr-1 text-emerald-400"></i>
+
                         Google Map Preview
+
                     </label>
 
                     <span class="text-[10px] text-emerald-400">
+
                         <i class="fas fa-circle text-[6px] mr-1"></i>
+
                         Live Preview
+
                     </span>
 
                 </div>
@@ -282,15 +355,18 @@ include '../includes/header.php';
                 <div class="rounded-xl overflow-hidden border border-white/10 bg-slate-900">
 
                     <iframe
-                        id="clientMap"
-                        src="https://maps.google.com/maps?q=Nagpur%20Maharashtra&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                        id="customerMap"
+                        src="<?= !empty($customer['address'])
+                            ? 'https://maps.google.com/maps?q=' . rawurlencode($customer['address']) . '&z=15&output=embed'
+                            : 'https://maps.google.com/maps?q=Nagpur%20Maharashtra&z=13&output=embed'
+                        ?>"
                         width="100%"
                         height="245"
                         style="border:0; display:block;"
                         loading="lazy"
                         allowfullscreen
                         referrerpolicy="no-referrer-when-downgrade"
-                        title="Client Location Map"
+                        title="Customer Location Map"
                     ></iframe>
 
                 </div>
@@ -298,13 +374,19 @@ include '../includes/header.php';
 
                 <a
                     id="openGoogleMap"
-                    href="https://www.google.com/maps/search/?api=1&query=Nagpur%20Maharashtra"
+                    href="<?= !empty($customer['address'])
+                        ? 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($customer['address'])
+                        : 'https://www.google.com/maps/search/?api=1&query=Nagpur%20Maharashtra'
+                    ?>"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="inline-flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 mt-3 transition"
                 >
+
                     <i class="fas fa-external-link-alt"></i>
+
                     Open in Google Maps
+
                 </a>
 
             </div>
@@ -322,13 +404,16 @@ include '../includes/header.php';
                 type="submit"
                 class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 transition-all"
             >
+
                 <i class="fas fa-save mr-1"></i>
-                Save Client
+
+                Update Customer
+
             </button>
 
 
             <a
-                href="clients_list.php"
+                href="customers_list.php"
                 class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm hover:bg-white/10 transition"
             >
                 Cancel
@@ -349,9 +434,9 @@ include '../includes/header.php';
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    const addressInput = document.getElementById('clientAddress');
+    const addressInput = document.getElementById('customerAddress');
 
-    const mapFrame = document.getElementById('clientMap');
+    const mapFrame = document.getElementById('customerMap');
 
     const mapStatus = document.getElementById('mapStatus');
 
@@ -361,14 +446,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // --------------------------------------------------------
-    // UPDATE GOOGLE MAP
+    // UPDATE MAP
     // --------------------------------------------------------
 
     function updateMap() {
 
         const address = addressInput.value.trim();
 
-        // Ignore short addresses
         if (address.length < 5) {
 
             mapStatus.innerHTML = `
@@ -377,31 +461,29 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
 
             return;
+
         }
 
 
-        // Encode address safely
         const encodedAddress = encodeURIComponent(address);
 
 
-        // Google Maps iframe URL
         const mapUrl =
             'https://maps.google.com/maps?q=' +
             encodedAddress +
             '&t=&z=15&ie=UTF8&iwloc=&output=embed';
 
 
-        // Update iframe
+        // Update map iframe
         mapFrame.src = mapUrl;
 
 
-        // Update external Google Maps link
+        // Update Google Maps external link
         openGoogleMap.href =
             'https://www.google.com/maps/search/?api=1&query=' +
             encodedAddress;
 
 
-        // Update status
         mapStatus.innerHTML = `
             <i class="fas fa-check-circle text-emerald-400 mr-1"></i>
             Map updated for entered address.
@@ -411,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // --------------------------------------------------------
-    // AUTOMATIC UPDATE ON TYPING
+    // AUTOMATIC MAP UPDATE
     // --------------------------------------------------------
 
     addressInput.addEventListener('input', function () {
@@ -423,7 +505,8 @@ document.addEventListener('DOMContentLoaded', function () {
             Waiting for address...
         `;
 
-        // Wait 1 second after typing stops
+
+        // Wait until typing stops
         typingTimer = setTimeout(function () {
 
             updateMap();
@@ -432,16 +515,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
-
-    // --------------------------------------------------------
-    // INITIAL MAP FOR POSTED ADDRESS
-    // --------------------------------------------------------
-
-    if (addressInput.value.trim().length >= 5) {
-
-        updateMap();
-
-    }
 
 });
 

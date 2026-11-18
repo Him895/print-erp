@@ -1,3 +1,4 @@
+
 <?php
 // ============================================================
 // FILE: services/view_service.php
@@ -9,9 +10,9 @@ $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) redirect('services_list.php');
 
 // Fetch Service Details
-$stmt = $conn->prepare("SELECT sv.*, c.client_name, c.phone, s.sale_no 
+$stmt = $conn->prepare("SELECT sv.*, c.customer_name, c.phone, s.sale_no 
     FROM services sv
-    LEFT JOIN clients c ON sv.client_id = c.id
+    LEFT JOIN customers c ON sv.client_id = c.id
     LEFT JOIN sales s ON sv.sale_id = s.id
     WHERE sv.id = ?");
 $stmt->bind_param('i', $id);
@@ -48,10 +49,10 @@ include '../includes/header.php';
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-    <!-- Client Info -->
+    <!-- Customer Info -->
     <div class="glass-dark rounded-2xl p-5 border border-white/5">
-        <h3 class="text-xs font-semibold text-indigo-400 mb-3 uppercase tracking-wider">Client Details</h3>
-        <div class="text-lg font-bold text-white mb-1"><?= e($service['client_name'] ?? 'Walk-in Customer') ?></div>
+        <h3 class="text-xs font-semibold text-indigo-400 mb-3 uppercase tracking-wider">Customer Details</h3>
+        <div class="text-lg font-bold text-white mb-1"><?= e($service['customer_name'] ?? 'Walk-in Customer') ?></div>
         <?php if($service['phone']): ?><div class="text-sm text-slate-300"><i class="fas fa-phone text-[10px] mr-2 text-slate-500"></i><?= e($service['phone']) ?></div><?php endif; ?>
         <?php if($service['sale_no']): ?>
             <div class="mt-3 pt-3 border-t border-white/5">

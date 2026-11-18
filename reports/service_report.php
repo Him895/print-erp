@@ -84,7 +84,7 @@ $where = "
     AND (
         ? = ''
         OR sv.service_no LIKE ?
-        OR c.client_name LIKE ?
+        OR c.customer_name LIKE ?
     )
 
     AND (
@@ -144,7 +144,7 @@ $summarySql = "
 
     FROM services sv
 
-    LEFT JOIN clients c
+    LEFT JOIN customers c
         ON sv.client_id = c.id
 
     $where
@@ -191,13 +191,13 @@ $sql = "
     SELECT
         sv.*,
 
-        c.client_name,
+        c.customer_name,
 
         si.item_print_types
 
     FROM services sv
 
-    LEFT JOIN clients c
+    LEFT JOIN customers c
         ON sv.client_id = c.id
 
     LEFT JOIN (
@@ -499,14 +499,14 @@ include '../includes/header.php';
 
         <div>
             <label class="text-[10px] text-slate-400 block mb-1">
-                Search Job / Client
+                Search Job / Customer
             </label>
 
             <input
                 type="text"
                 name="search"
                 value="<?= e($search) ?>"
-                placeholder="Job no. or client name"
+                placeholder="Job no. or customer name"
                 class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
             >
         </div>
@@ -761,7 +761,7 @@ include '../includes/header.php';
                         </th>
 
                         <th class="px-4 py-3 text-slate-400 font-medium whitespace-nowrap">
-                            Client
+                            Customer
                         </th>
 
                         <th class="px-4 py-3 text-slate-400 font-medium whitespace-nowrap">
@@ -800,8 +800,8 @@ include '../includes/header.php';
 
                                 $statusClass = getServiceStatusClass($status);
 
-                                $clientName = !empty($s['client_name'])
-                                    ? $s['client_name']
+                                $customerName = !empty($s['customer_name'])
+                                    ? $s['customer_name']
                                     : 'Walk-in';
 
                                 $serviceDate = $s['service_date'] ?? '';
@@ -826,7 +826,7 @@ include '../includes/header.php';
                                 </td>
 
                                 <td class="px-4 py-3 text-white font-medium whitespace-nowrap">
-                                    <?= e($clientName) ?>
+                                    <?= e($customerName) ?>
                                 </td>
 
                                 <td class="px-4 py-3 text-slate-400 text-[10px] uppercase font-medium">

@@ -370,10 +370,10 @@ if ($type === 'receivable') {
             'sale' AS ref_type,
             s.sale_no AS no,
             s.due_amount,
-            c.client_name AS name,
+            c.customer_name AS name,
             'Sale' AS source_label
         FROM sales s
-        LEFT JOIN clients c ON s.client_id = c.id
+        LEFT JOIN customers c ON s.client_id = c.id
         WHERE s.due_amount > 0
           AND s.status <> 'cancelled'
 
@@ -384,10 +384,10 @@ if ($type === 'receivable') {
             'service' AS ref_type,
             sv.service_no AS no,
             sv.due_amount,
-            c.client_name AS name,
+            c.customer_name AS name,
             'Service' AS source_label
         FROM services sv
-        LEFT JOIN clients c ON sv.client_id = c.id
+        LEFT JOIN customers c ON sv.client_id = c.id
         WHERE sv.due_amount > 0
 
         ORDER BY id DESC

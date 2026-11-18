@@ -22,12 +22,12 @@ if ($id <= 0) {
 $stmt = $conn->prepare("
     SELECT
         sv.*,
-        c.client_name,
+        c.customer_name,
         c.phone,
         c.address,
         c.gst_no
     FROM services sv
-    LEFT JOIN clients c ON sv.client_id = c.id
+    LEFT JOIN customers c ON sv.client_id = c.id
     WHERE sv.id = ?
     LIMIT 1
 ");
@@ -130,8 +130,8 @@ $due_amount = max(0, $grand_total - $paid_amount);
 // ------------------------------------------------------------
 // DISPLAY HELPERS
 // ------------------------------------------------------------
-$customer_name = !empty($service['client_name'])
-    ? $service['client_name']
+$customer_name = !empty($service['customer_name'])
+    ? $service['customer_name']
     : 'Walk-in Customer';
 
 $service_date = !empty($service['service_date'])

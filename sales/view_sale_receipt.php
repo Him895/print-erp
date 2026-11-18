@@ -1,3 +1,4 @@
+
 <?php
 // ============================================================
 // FILE: sales/view_sale_receipt.php
@@ -7,6 +8,7 @@
 
 require_once '../config/config.php';
 require_permission('sales');
+
 $page_title = 'Sale Payment Receipt';
 
 $id      = (int)($_GET['id'] ?? 0);
@@ -51,18 +53,20 @@ if ($sale_id <= 0) {
 }
 
 // ------------------------------------------------------------
-// 2. FETCH SALE + CLIENT DETAILS
+// 2. FETCH SALE + CUSTOMER DETAILS
+// Customer details customers table se fetch hongi.
+// Existing sales.client_id FK same rakha hai.
 // ------------------------------------------------------------
 
 $stmt = $conn->prepare("
     SELECT
         s.*,
-        c.client_name,
+        c.customer_name,
         c.phone,
         c.address,
         c.gst_no
     FROM sales s
-    LEFT JOIN clients c ON s.client_id = c.id
+    LEFT JOIN customers c ON s.client_id = c.id
     WHERE s.id = ?
     LIMIT 1
 ");
@@ -204,7 +208,6 @@ include '../includes/header.php';
     </div>
 </div>
 
-
 <!-- RECEIPT -->
 <div class="print-area max-w-3xl mx-auto">
 
@@ -239,7 +242,7 @@ include '../includes/header.php';
             <div class="text-right">
 
                 <div class="text-sm font-bold text-emerald-300 tracking-wide">
-                   FIRST PAYMENT RECEIPT
+                    FIRST PAYMENT RECEIPT
                 </div>
 
                 <div class="text-xs text-slate-400 mt-1">
@@ -254,7 +257,6 @@ include '../includes/header.php';
 
         </div>
 
-
         <!-- CUSTOMER DETAILS -->
         <div class="mb-4">
 
@@ -263,7 +265,7 @@ include '../includes/header.php';
             </div>
 
             <div class="text-white font-semibold text-base">
-                <?= e($sale['client_name'] ?? 'Walk-in Customer') ?>
+                <?= e($sale['customer_name'] ?? 'Walk-in Customer') ?>
             </div>
 
             <?php if (!empty($sale['phone'])): ?>
@@ -286,7 +288,6 @@ include '../includes/header.php';
             <?php endif; ?>
 
         </div>
-
 
         <!-- SALE DETAILS -->
         <div class="bg-white/5 rounded-lg p-3 mb-4 border border-white/10">
@@ -328,7 +329,6 @@ include '../includes/header.php';
             </div>
 
         </div>
-
 
         <!-- SALE ITEMS -->
         <?php if (!empty($items)): ?>
@@ -425,7 +425,6 @@ include '../includes/header.php';
 
         <?php endif; ?>
 
-
         <!-- ORIGINAL ADVANCE AMOUNT -->
         <div class="bg-gradient-to-r from-emerald-500/15 to-teal-500/10 rounded-xl p-5 border border-emerald-500/20 mb-4 text-center">
 
@@ -446,7 +445,6 @@ include '../includes/header.php';
             </div>
 
         </div>
-
 
         <!-- SALE TOTAL SUMMARY -->
         <div class="border-t border-white/10 pt-3 space-y-2">
@@ -491,7 +489,6 @@ include '../includes/header.php';
 
             <?php endif; ?>
 
-
             <!-- GRAND TOTAL -->
             <div class="flex justify-between text-sm font-bold border-t border-white/10 pt-2">
 
@@ -504,7 +501,6 @@ include '../includes/header.php';
                 </span>
 
             </div>
-
 
             <!-- ORIGINAL DUE AT SALE TIME -->
             <div class="flex justify-between text-sm font-bold border-t border-white/10 pt-2">
@@ -525,7 +521,6 @@ include '../includes/header.php';
 
         </div>
 
-
         <!-- FOOTER -->
         <div class="mt-6 pt-3 border-t border-white/10 text-center text-[10px] text-slate-500">
 
@@ -540,7 +535,6 @@ include '../includes/header.php';
     </div>
 
 </div>
-
 
 <!-- PRINT STYLING -->
 <style>
